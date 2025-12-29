@@ -1,7 +1,6 @@
 package com.yasirkula.unity;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -16,6 +15,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
 import androidx.core.content.FileProvider;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -88,10 +89,17 @@ public class NativeShare
 		{
 			Log.d( "Unity", "Creating standard share dialog" );
 
+			if( !( context instanceof FragmentActivity ) )
+			{
+				Log.e( "Unity", "NativeShare requires FragmentActivity to show the standard share dialog." );
+				shareResultReceiver.OnShareCompleted( 2, "" ); // 2: NotShared
+				return;
+			}
+
 			final Fragment request = new NativeShareFragment();
 			request.setArguments( bundle );
 
-			( (Activity) context ).getFragmentManager().beginTransaction().add( 0, request ).commitAllowingStateLoss();
+			( (FragmentActivity) context ).getSupportFragmentManager().beginTransaction().add( 0, request ).commitAllowingStateLoss();
 		}
 	}
 

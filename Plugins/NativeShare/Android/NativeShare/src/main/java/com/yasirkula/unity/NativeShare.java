@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.webkit.MimeTypeMap;
+import androidx.core.content.FileProvider;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -172,7 +173,7 @@ public class NativeShare
 			{
 				intent.setAction( Intent.ACTION_SEND );
 
-				Uri contentUri = NativeShareContentProvider.getUriForFile( context, NativeShare.authority, new File( files.get( 0 ) ) );
+				Uri contentUri = FileProvider.getUriForFile( context, NativeShare.authority, new File( files.get( 0 ) ) );
 				fileUris.add( contentUri );
 
 				intent.putExtra( Intent.EXTRA_STREAM, contentUri );
@@ -183,7 +184,7 @@ public class NativeShare
 				intent.setAction( Intent.ACTION_SEND_MULTIPLE );
 				for( int i = 0; i < files.size(); i++ )
 				{
-					Uri contentUri = NativeShareContentProvider.getUriForFile( context, NativeShare.authority, new File( files.get( i ) ) );
+					Uri contentUri = FileProvider.getUriForFile( context, NativeShare.authority, new File( files.get( i ) ) );
 					fileUris.add( contentUri );
 				}
 
@@ -257,7 +258,7 @@ public class NativeShare
 					for( ProviderInfo provider : providers )
 					{
 						if( provider.name != null && provider.packageName != null && provider.authority != null &&
-								provider.name.equals( NativeShareContentProvider.class.getName() ) && provider.packageName.equals( context.getPackageName() )
+								provider.name.equals( FileProvider.class.getName() ) && provider.packageName.equals( context.getPackageName() )
 								&& provider.authority.length() > 0 )
 						{
 							authority = provider.authority;

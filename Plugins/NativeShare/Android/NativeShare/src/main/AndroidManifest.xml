@@ -4,10 +4,14 @@
 		<activity android:name=".NativeShareCustomShareDialogActivity" android:theme="@style/Theme.NativeShareTransparent" android:exported="false" />
 		<receiver android:name=".NativeShareBroadcastListener" android:exported="false" />
 		<provider
-		  android:name="com.yasirkula.unity.NativeShareContentProvider"
+		  android:name="androidx.core.content.FileProvider"
 		  android:authorities="${applicationId}.NativeShareContentProvider"
 		  android:exported="false"
-		  android:grantUriPermissions="true" />
+		  android:grantUriPermissions="true">
+			<meta-data
+			  android:name="androidx.core.FILE_PROVIDER_PATHS"
+			  android:resource="@xml/file_paths" />
+		</provider>
 	</application>
 	
 	<queries>

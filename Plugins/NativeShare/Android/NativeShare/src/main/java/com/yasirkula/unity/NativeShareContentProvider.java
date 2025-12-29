@@ -47,13 +47,10 @@ public class NativeShareContentProvider extends ContentProvider
 {
 	private static final String[] COLUMNS = { OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE };
 	private static final String META_DATA_FILE_PROVIDER_PATHS = "android.support.FILE_PROVIDER_PATHS";
-	private static final String TAG_ROOT_PATH = "root-path";
 	private static final String TAG_FILES_PATH = "files-path";
 	private static final String TAG_CACHE_PATH = "cache-path";
-	private static final String TAG_EXTERNAL = "external-path";
-	private static final String ATTR_NAME = "name";
-	private static final String ATTR_PATH = "path";
-	private static final File DEVICE_ROOT = new File("/");
+	private static final String TAG_EXTERNAL_FILES_PATH = "external-files-path";
+	private static final String TAG_EXTERNAL_CACHE_PATH = "external-cache-path";
 	// @GuardedBy("sCache")
 	private static HashMap<String, PathStrategy> sCache = new HashMap<String, PathStrategy>();
 	private PathStrategy mStrategy;
@@ -269,11 +266,10 @@ public class NativeShareContentProvider extends ContentProvider
 			//}
 		}
 
-		File target = null;
-		target = buildPath(DEVICE_ROOT, ".");
-		if (target != null) {
-			strat.addRoot("devroot", target);
-		}
+		addRootIfPresent(strat, TAG_FILES_PATH, context.getFilesDir());
+		addRootIfPresent(strat, TAG_CACHE_PATH, context.getCacheDir());
+		addRootIfPresent(strat, TAG_EXTERNAL_FILES_PATH, context.getExternalFilesDir(null));
+		addRootIfPresent(strat, TAG_EXTERNAL_CACHE_PATH, context.getExternalCacheDir());
 
 		return strat;
 	}
@@ -415,14 +411,10 @@ public class NativeShareContentProvider extends ContentProvider
 		}
 		return modeBits;
 	}
-	private static File buildPath(File base, String... segments) {
-		File cur = base;
-		for (String segment : segments) {
-			if (segment != null) {
-				cur = new File(cur, segment);
-			}
+	private static void addRootIfPresent(SimplePathStrategy strat, String name, File root) {
+		if (root != null) {
+			strat.addRoot(name, root);
 		}
-		return cur;
 	}
 	private static String[] copyOf(String[] original, int newLength) {
 		final String[] result = new String[newLength];

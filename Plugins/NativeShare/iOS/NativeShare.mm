@@ -1,10 +1,6 @@
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
-#ifdef UNITY_4_0 || UNITY_5_0
-#import "iPhone_View.h"
-#else
 extern UIViewController* UnityGetGLViewController();
-#endif
 
 // Credit: https://github.com/ChrisMaire/unity-native-sharing
 
@@ -77,11 +73,9 @@ extern "C" void _NativeShare_Share( const char* files[], int filesCount, const c
 	for( int i = 0; i < filesCount; i++ ) 
 	{
 		NSString *filePath = [NSString stringWithUTF8String:files[i]];
-		UIImage *image = [UIImage imageWithContentsOfFile:filePath];
-		if( image != nil )
-			[items addObject:image];
-		else
-			[items addObject:[NSURL fileURLWithPath:filePath]];
+		NSURL *fileURL = [NSURL fileURLWithPath:filePath];
+		if( fileURL != nil )
+			[items addObject:fileURL];
 	}
 	
 	if( strlen( subject ) == 0 && [items count] == 0 )
@@ -93,8 +87,6 @@ extern "C" void _NativeShare_Share( const char* files[], int filesCount, const c
 	}
 	
 	UIActivityViewController *activity = [[UIActivityViewController alloc] initWithActivityItems:items applicationActivities:nil];
-	if( strlen( subject ) > 0 )
-		[activity setValue:[NSString stringWithUTF8String:subject] forKey:@"subject"];
 	
 	void (^shareResultCallback)(UIActivityType activityType, BOOL completed, UIActivityViewController *activityReference) = ^void( UIActivityType activityType, BOOL completed, UIActivityViewController *activityReference )
 	{

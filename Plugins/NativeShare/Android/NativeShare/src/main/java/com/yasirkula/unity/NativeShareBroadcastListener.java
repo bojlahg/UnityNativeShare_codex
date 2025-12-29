@@ -25,8 +25,7 @@ public class NativeShareBroadcastListener extends BroadcastReceiver
 			// We must mark PendingIntent as either mutable or immutable on Android 12+
 			// Maybe FLAG_IMMUTABLE is sufficient but the pre-31 default value was implicitly mutable and I don't trust
 			// all social apps to work correctly on Android 12+ (API 31+) if I set it to FLAG_IMMUTABLE
-			//pendingIntentFlags |= PendingIntent.FLAG_MUTABLE;
-			pendingIntentFlags |= 1 << 25; // Hardcoded value of PendingIntent.FLAG_MUTABLE (when compiling with an older SDK version)
+			pendingIntentFlags |= PendingIntent.FLAG_MUTABLE;
 		}
 
 		return PendingIntent.getBroadcast( context, 0, receiverIntent, pendingIntentFlags ).getIntentSender();

@@ -36,14 +36,21 @@ namespace NativeShareNamespace
 			}
 		}
 
-		private IEnumerator OnApplicationFocus( bool focus )
+		private void OnApplicationFocus( bool focus )
 		{
 			if( focus )
 			{
 				// Share sheet is closed and now Unity activity is running again. Send Unknown result if OnShareCompleted wasn't called
-				yield return null;
-				resultReceived = true;
+				StartCoroutine( DelayedFocusResult() );
 			}
+		}
+
+		private IEnumerator DelayedFocusResult()
+		{
+			yield return null;
+
+			if( !resultReceived )
+				resultReceived = true;
 		}
 
 		public void OnShareCompleted( int resultRaw, string shareTarget )

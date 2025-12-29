@@ -1,7 +1,6 @@
 package com.yasirkula.unity;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -11,6 +10,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +24,7 @@ import java.util.List;
 // Displays standard ACTION_SEND share sheet and waits for its result via onActivityResult and NativeShareBroadcastListener
 public class NativeShareFragment extends Fragment
 {
-	private static final int SHARE_RESULT_CODE = 774457;
+	private ActivityResultLauncher<Intent> shareLauncher;
 
 	public static final String TARGET_PACKAGE_ID = "NS_TARGET_PACKAGE";
 	public static final String TARGET_CLASS_ID = "NS_TARGET_CLASS";
@@ -38,8 +40,10 @@ public class NativeShareFragment extends Fragment
 	{
 		super.onCreate( savedInstanceState );
 
+		shareLauncher = registerForActivityResult( new ActivityResultContracts.StartActivityForResult(), result -> handleShareResult( result.getResultCode() ) );
+
 		if( NativeShare.shareResultReceiver == null )
-			onActivityResult( SHARE_RESULT_CODE, Activity.RESULT_CANCELED, null );
+			handleShareResult( Activity.RESULT_CANCELED );
 		else
 		{
 			final ArrayList<Uri> fileUris = new ArrayList<Uri>();
@@ -67,22 +71,18 @@ public class NativeShareFragment extends Fragment
 					NativeShare.GrantURIPermissionsToShareIntentTargets( getActivity(), shareTargets, fileUris );
 				}
 
-				startActivityForResult( chooserIntent, SHARE_RESULT_CODE );
+				shareLauncher.launch( chooserIntent );
 			}
 			catch( ActivityNotFoundException e )
 			{
 				Toast.makeText( getActivity(), "No apps can perform this action.", Toast.LENGTH_LONG ).show();
-				onActivityResult( SHARE_RESULT_CODE, Activity.RESULT_CANCELED, null );
+				handleShareResult( Activity.RESULT_CANCELED );
 			}
 		}
 	}
 
-	@Override
-	public void onActivityResult( int requestCode, int resultCode, Intent data )
+	private void handleShareResult( int resultCode )
 	{
-		if( requestCode != SHARE_RESULT_CODE )
-			return;
-
 		if( NativeShare.shareResultReceiver != null )
 		{
 			Log.d( "Unity", "Reported share result (may not be correct): " + ( resultCode == Activity.RESULT_OK ) );
@@ -108,6 +108,6 @@ public class NativeShareFragment extends Fragment
 		else
 			Log.e( "Unity", "NativeShareResultReceiver was null!" );
 
-		getFragmentManager().beginTransaction().remove( this ).commitAllowingStateLoss();
+		getParentFragmentManager().beginTransaction().remove( this ).commitAllowingStateLoss();
 	}
 }

@@ -60,8 +60,10 @@ public class NativeShare
 
 	private readonly List<string> files = new List<string>( 0 );
 	private readonly List<string> mimes = new List<string>( 0 );
+	private readonly List<string> tempFiles = new List<string>( 0 );
 
 	private ShareResultCallback callback;
+	private bool autoDeleteTempFiles;
 
 	public NativeShare Clear()
 	{
@@ -74,6 +76,7 @@ public class NativeShare
 #endif
 		files.Clear();
 		mimes.Clear();
+		tempFiles.Clear();
 
 		callback = null;
 
@@ -107,6 +110,12 @@ public class NativeShare
 	public NativeShare SetCallback( ShareResultCallback callback )
 	{
 		this.callback = callback;
+		return this;
+	}
+
+	public NativeShare SetAutoDeleteTempFiles( bool autoDelete = true )
+	{
+		autoDeleteTempFiles = autoDelete;
 		return this;
 	}
 
@@ -154,6 +163,8 @@ public class NativeShare
 
 	public NativeShare AddFile( Texture2D texture, string createdFileName = "Image.png" )
 	{
+		// Creates a uniquely named temp file under Application.temporaryCachePath.
+		// If SetAutoDeleteTempFiles(true) is used, the temp file will be deleted after Share() completes (in callback).
 		if( !texture )
 			Debug.LogError( "Share Error: Texture does not exist!" );
 		else
@@ -172,8 +183,15 @@ public class NativeShare
 				saveAsJpeg = false;
 			}
 
-			string filePath = Path.Combine( Application.temporaryCachePath, createdFileName );
+			string fileExtension = Path.GetExtension( createdFileName );
+			string fileBaseName = Path.GetFileNameWithoutExtension( createdFileName );
+			if( string.IsNullOrEmpty( fileBaseName ) )
+				fileBaseName = "Image";
+
+			string uniqueFileName = string.Format( "{0}_{1}{2}", fileBaseName, System.Guid.NewGuid().ToString( "N" ), fileExtension );
+			string filePath = Path.Combine( Application.temporaryCachePath, uniqueFileName );
 			File.WriteAllBytes( filePath, GetTextureBytes( texture, saveAsJpeg ) );
+			tempFiles.Add( filePath );
 
 			AddFile( filePath, saveAsJpeg ? "image/jpeg" : "image/png" );
 		}
@@ -199,15 +217,17 @@ public class NativeShare
 			return;
 		}
 
+		ShareResultCallback callbackToUse = WrapCallbackForCleanup( callback );
+
 #if UNITY_EDITOR
 		Debug.Log( "Shared!" );
 
-		if( callback != null )
-			callback( ShareResult.Shared, null );
+		if( callbackToUse != null )
+			callbackToUse( ShareResult.Shared, null );
 #elif UNITY_ANDROID
-		AJC.CallStatic( "Share", Context, new NSShareResultCallbackAndroid( callback ), targetPackages.ToArray(), targetClasses.ToArray(), files.ToArray(), mimes.ToArray(), emailRecipients.ToArray(), subject, CombineURLWithText(), title );
+		AJC.CallStatic( "Share", Context, new NSShareResultCallbackAndroid( callbackToUse ), targetPackages.ToArray(), targetClasses.ToArray(), files.ToArray(), mimes.ToArray(), emailRecipients.ToArray(), subject, CombineURLWithText(), title );
 #elif UNITY_IOS
-		NSShareResultCallbackiOS.Initialize( callback );
+		NSShareResultCallbackiOS.Initialize( callbackToUse );
 		if( files.Count == 0 )
 			_NativeShare_Share( new string[0], 0, subject, text, GetURLWithScheme() );
 		else
@@ -347,6 +367,42 @@ public class NativeShare
 		{
 			Object.DestroyImmediate( sourceTexReadable );
 		}
+	}
+
+	private ShareResultCallback WrapCallbackForCleanup( ShareResultCallback originalCallback )
+	{
+		if( !autoDeleteTempFiles || tempFiles.Count == 0 )
+			return originalCallback;
+
+		return ( result, shareTarget ) =>
+		{
+			DeleteTempFiles();
+
+			if( originalCallback != null )
+				originalCallback( result, shareTarget );
+		};
+	}
+
+	private void DeleteTempFiles()
+	{
+		for( int i = 0; i < tempFiles.Count; i++ )
+		{
+			string tempFile = tempFiles[i];
+			if( string.IsNullOrEmpty( tempFile ) )
+				continue;
+
+			try
+			{
+				if( File.Exists( tempFile ) )
+					File.Delete( tempFile );
+			}
+			catch( System.Exception e )
+			{
+				Debug.LogWarning( "Share Warning: Failed to delete temp file: " + tempFile + "\n" + e );
+			}
+		}
+
+		tempFiles.Clear();
 	}
 	#endregion
 }

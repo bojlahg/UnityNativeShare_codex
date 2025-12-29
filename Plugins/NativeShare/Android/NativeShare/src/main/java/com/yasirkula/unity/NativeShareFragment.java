@@ -57,7 +57,15 @@ public class NativeShareFragment extends Fragment
 					chooserIntent = Intent.createChooser( shareIntent, title, NativeShareBroadcastListener.Initialize( getActivity() ) );
 
 				if( fileUris.size() > 0 )
-					NativeShare.GrantURIPermissionsToShareIntentTargets( getActivity(), getActivity().getPackageManager().queryIntentActivities( chooserIntent, PackageManager.MATCH_DEFAULT_ONLY ), fileUris );
+				{
+					List<ResolveInfo> shareTargets;
+					if( Build.VERSION.SDK_INT >= 33 )
+						shareTargets = getActivity().getPackageManager().queryIntentActivities( chooserIntent, PackageManager.ResolveInfoFlags.of( PackageManager.MATCH_DEFAULT_ONLY ) );
+					else
+						shareTargets = getActivity().getPackageManager().queryIntentActivities( chooserIntent, PackageManager.MATCH_DEFAULT_ONLY );
+
+					NativeShare.GrantURIPermissionsToShareIntentTargets( getActivity(), shareTargets, fileUris );
+				}
 
 				startActivityForResult( chooserIntent, SHARE_RESULT_CODE );
 			}

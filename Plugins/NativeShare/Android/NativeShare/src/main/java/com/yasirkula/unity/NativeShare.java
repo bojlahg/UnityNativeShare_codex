@@ -246,7 +246,11 @@ public class NativeShare
 			// Credit: https://stackoverflow.com/a/2001769/2373034
 			try
 			{
-				PackageInfo packageInfo = context.getPackageManager().getPackageInfo( context.getPackageName(), PackageManager.GET_PROVIDERS );
+				PackageInfo packageInfo;
+				if( Build.VERSION.SDK_INT >= 33 )
+					packageInfo = context.getPackageManager().getPackageInfo( context.getPackageName(), PackageManager.PackageInfoFlags.of( PackageManager.GET_PROVIDERS ) );
+				else
+					packageInfo = context.getPackageManager().getPackageInfo( context.getPackageName(), PackageManager.GET_PROVIDERS );
 				ProviderInfo[] providers = packageInfo.providers;
 				if( providers != null )
 				{
@@ -345,11 +349,18 @@ public class NativeShare
 		{
 			if( className.length() == 0 )
 			{
-				context.getPackageManager().getPackageInfo( packageName, 0 );
+				if( Build.VERSION.SDK_INT >= 33 )
+					context.getPackageManager().getPackageInfo( packageName, PackageManager.PackageInfoFlags.of( 0 ) );
+				else
+					context.getPackageManager().getPackageInfo( packageName, 0 );
 				return true;
 			}
 
-			PackageInfo packageInfo = context.getPackageManager().getPackageInfo( packageName, PackageManager.GET_ACTIVITIES );
+			PackageInfo packageInfo;
+			if( Build.VERSION.SDK_INT >= 33 )
+				packageInfo = context.getPackageManager().getPackageInfo( packageName, PackageManager.PackageInfoFlags.of( PackageManager.GET_ACTIVITIES ) );
+			else
+				packageInfo = context.getPackageManager().getPackageInfo( packageName, PackageManager.GET_ACTIVITIES );
 			ActivityInfo[] activities = packageInfo.activities;
 			if( activities != null )
 			{
@@ -370,7 +381,11 @@ public class NativeShare
 
 	public static String FindMatchingTarget( Context context, String packageNameRegex, String classNameRegex )
 	{
-		List<PackageInfo> packages = context.getPackageManager().getInstalledPackages( PackageManager.GET_ACTIVITIES );
+		List<PackageInfo> packages;
+		if( Build.VERSION.SDK_INT >= 33 )
+			packages = context.getPackageManager().getInstalledPackages( PackageManager.PackageInfoFlags.of( PackageManager.GET_ACTIVITIES ) );
+		else
+			packages = context.getPackageManager().getInstalledPackages( PackageManager.GET_ACTIVITIES );
 		if( packages != null )
 		{
 			Pattern packagePattern = Pattern.compile( packageNameRegex );

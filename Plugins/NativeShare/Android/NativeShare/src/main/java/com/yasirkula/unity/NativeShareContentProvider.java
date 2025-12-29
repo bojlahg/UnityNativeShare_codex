@@ -9,6 +9,7 @@ import android.content.res.XmlResourceParser;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.ParcelFileDescriptor;
 import android.provider.OpenableColumns;
 import android.text.TextUtils;
@@ -250,8 +251,13 @@ public class NativeShareContentProvider extends ContentProvider
 	private static PathStrategy parsePathStrategy(Context context, String authority)
 			throws IOException, XmlPullParserException {
 		final SimplePathStrategy strat = new SimplePathStrategy(authority);
-		final ProviderInfo info = context.getPackageManager()
-				.resolveContentProvider(authority, PackageManager.GET_META_DATA);
+		final ProviderInfo info;
+		if( Build.VERSION.SDK_INT >= 33 )
+			info = context.getPackageManager()
+					.resolveContentProvider(authority, PackageManager.ComponentInfoFlags.of( PackageManager.GET_META_DATA ));
+		else
+			info = context.getPackageManager()
+					.resolveContentProvider(authority, PackageManager.GET_META_DATA);
 		if (info == null)
 		{
 			Log.w("Unity", "NativeShareContentProvider.resolveContentProvider is null!");

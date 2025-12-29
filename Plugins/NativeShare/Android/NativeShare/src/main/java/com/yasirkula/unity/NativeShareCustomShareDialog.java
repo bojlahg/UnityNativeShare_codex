@@ -85,7 +85,11 @@ public class NativeShareCustomShareDialog extends DialogFragment
 		final ArrayList<String> targetClasses = getArguments().getStringArrayList( NativeShareFragment.TARGET_CLASS_ID );
 
 		PackageManager packageManager = getActivity().getPackageManager();
-		List<ResolveInfo> shareTargets = packageManager.queryIntentActivities( shareIntent, PackageManager.MATCH_DEFAULT_ONLY );
+		List<ResolveInfo> shareTargets;
+		if( android.os.Build.VERSION.SDK_INT >= 33 )
+			shareTargets = packageManager.queryIntentActivities( shareIntent, PackageManager.ResolveInfoFlags.of( PackageManager.MATCH_DEFAULT_ONLY ) );
+		else
+			shareTargets = packageManager.queryIntentActivities( shareIntent, PackageManager.MATCH_DEFAULT_ONLY );
 
 		if( fileUris.size() > 0 )
 			NativeShare.GrantURIPermissionsToShareIntentTargets( getActivity(), shareTargets, fileUris );

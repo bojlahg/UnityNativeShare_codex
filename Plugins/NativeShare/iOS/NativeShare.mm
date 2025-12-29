@@ -55,18 +55,19 @@ extern "C" void _NativeShare_Share( const char* files[], int filesCount, const c
 	if( strlen( link ) > 0 )
 	{
 		NSString *urlRaw = [NSString stringWithUTF8String:link];
-		NSURL *url = [NSURL URLWithString:urlRaw];
+		NSURLComponents *components = [NSURLComponents componentsWithString:urlRaw];
+		NSURL *url = components.URL;
 		if( url == nil )
 		{
-			// Try escaping the URL
-			if( CHECK_IOS_VERSION( @"9.0" ) )
+			// Try escaping the URL (including query/fragment)
+			NSString *encodedUrl = [urlRaw stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLFragmentAllowedCharacterSet]];
+			if( encodedUrl != nil )
 			{
-				url = [NSURL URLWithString:[urlRaw stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLHostAllowedCharacterSet]]];
+				components = [NSURLComponents componentsWithString:encodedUrl];
+				url = components.URL;
 				if( url == nil )
-					url = [NSURL URLWithString:[urlRaw stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLFragmentAllowedCharacterSet]]];
+					url = [NSURL URLWithString:encodedUrl];
 			}
-			else
-				url = [NSURL URLWithString:[urlRaw stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]];
 		}
 		
 		if( url != nil )

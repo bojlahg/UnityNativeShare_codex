@@ -60,8 +60,10 @@ public class NativeShare
 
 	private readonly List<string> files = new List<string>( 0 );
 	private readonly List<string> mimes = new List<string>( 0 );
+	private readonly List<string> temporaryFiles = new List<string>( 0 );
 
 	private ShareResultCallback callback;
+	private bool cleanupAfterShare = true;
 
 	public NativeShare Clear()
 	{
@@ -76,6 +78,9 @@ public class NativeShare
 		mimes.Clear();
 
 		callback = null;
+
+		if( cleanupAfterShare )
+			CleanupTemporaryFiles();
 
 		return this;
 	}
@@ -107,6 +112,12 @@ public class NativeShare
 	public NativeShare SetCallback( ShareResultCallback callback )
 	{
 		this.callback = callback;
+		return this;
+	}
+
+	public NativeShare SetCleanupAfterShare( bool cleanupAfterShare )
+	{
+		this.cleanupAfterShare = cleanupAfterShare;
 		return this;
 	}
 
@@ -176,6 +187,7 @@ public class NativeShare
 			File.WriteAllBytes( filePath, GetTextureBytes( texture, saveAsJpeg ) );
 
 			AddFile( filePath, saveAsJpeg ? "image/jpeg" : "image/png" );
+			temporaryFiles.Add( filePath );
 		}
 
 		return this;
@@ -204,10 +216,13 @@ public class NativeShare
 
 		if( callback != null )
 			callback( ShareResult.Shared, null );
+
+		if( cleanupAfterShare )
+			CleanupTemporaryFiles();
 #elif UNITY_ANDROID
-		AJC.CallStatic( "Share", Context, new NSShareResultCallbackAndroid( callback ), targetPackages.ToArray(), targetClasses.ToArray(), files.ToArray(), mimes.ToArray(), emailRecipients.ToArray(), subject, CombineURLWithText(), title );
+		AJC.CallStatic( "Share", Context, new NSShareResultCallbackAndroid( GetCleanupCallback( callback ) ), targetPackages.ToArray(), targetClasses.ToArray(), files.ToArray(), mimes.ToArray(), emailRecipients.ToArray(), subject, CombineURLWithText(), title );
 #elif UNITY_IOS
-		NSShareResultCallbackiOS.Initialize( callback );
+		NSShareResultCallbackiOS.Initialize( GetCleanupCallback( callback ) );
 		if( files.Count == 0 )
 			_NativeShare_Share( new string[0], 0, subject, text, GetURLWithScheme() );
 		else
@@ -218,6 +233,9 @@ public class NativeShare
 		}
 #else
 		Debug.LogWarning( "NativeShare is not supported on this platform!" );
+
+		if( cleanupAfterShare )
+			CleanupTemporaryFiles();
 #endif
 	}
 
@@ -281,6 +299,38 @@ public class NativeShare
 			return GetURLWithScheme();
 		else
 			return string.Concat( text, " ", GetURLWithScheme() );
+	}
+
+	private ShareResultCallback GetCleanupCallback( ShareResultCallback originalCallback )
+	{
+		if( !cleanupAfterShare || temporaryFiles.Count == 0 )
+			return originalCallback;
+
+		return ( result, shareTarget ) =>
+		{
+			if( originalCallback != null )
+				originalCallback( result, shareTarget );
+
+			CleanupTemporaryFiles();
+		};
+	}
+
+	private void CleanupTemporaryFiles()
+	{
+		for( int i = 0; i < temporaryFiles.Count; i++ )
+		{
+			try
+			{
+				if( File.Exists( temporaryFiles[i] ) )
+					File.Delete( temporaryFiles[i] );
+			}
+			catch( System.Exception e )
+			{
+				Debug.LogWarning( "Failed to delete temporary share file: " + temporaryFiles[i] + "\n" + e.Message );
+			}
+		}
+
+		temporaryFiles.Clear();
 	}
 
 	private byte[] GetTextureBytes( Texture2D texture, bool isJpeg )

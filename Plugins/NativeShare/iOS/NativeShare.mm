@@ -99,6 +99,7 @@ extern "C" void _NativeShare_Share( const char* files[], int filesCount, const c
 			strcpy( result, resultMessage );
 			
 			UnitySendMessage( "NSShareResultCallbackiOS", "OnShareCompleted", result );
+			free( result );
 			
 			// On iPhones, the share sheet isn't dismissed automatically when share operation is canceled, do that manually here
 			if( !completed && UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone )

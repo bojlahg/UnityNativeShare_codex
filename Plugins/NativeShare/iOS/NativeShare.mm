@@ -151,7 +151,15 @@ extern "C" void _NativeShare_Share( const char* files[], int filesCount, const c
 	}
 	else // iPad
 	{
-		UIPopoverController *popup = [[UIPopoverController alloc] initWithContentViewController:activity];
-		[popup presentPopoverFromRect:CGRectMake( rootViewController.view.frame.size.width / 2, rootViewController.view.frame.size.height / 2, 1, 1 ) inView:rootViewController.view permittedArrowDirections:0 animated:YES];
+		activity.modalPresentationStyle = UIModalPresentationPopover;
+		UIPopoverPresentationController *popover = activity.popoverPresentationController;
+		if( popover != nil )
+		{
+			popover.sourceView = rootViewController.view;
+			CGRect bounds = rootViewController.view.bounds;
+			popover.sourceRect = CGRectMake( CGRectGetMidX( bounds ), CGRectGetMidY( bounds ), 1, 1 );
+		}
+
+		[rootViewController presentViewController:activity animated:YES completion:nil];
 	}
 }

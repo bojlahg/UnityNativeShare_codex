@@ -1,9 +1,8 @@
 package com.yasirkula.unity;
 
-import android.app.Activity;
-import android.app.DialogFragment;
 import android.os.Bundle;
-import android.os.PersistableBundle;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentActivity;
 
 // Sole purpose of this activity is to show a NativeShareCustomShareDialog inside
 // We are not displaying this dialog inside Unity's own Activity for 2 reasons:
@@ -13,14 +12,14 @@ import android.os.PersistableBundle;
 // didn't click the Share button and click it again. This will result in 2 dialogs being displayed one after another and the
 // second dialog's result can't be fetched by Unity
 // Using a separate Activity (this one) helps eliminate both of these issues
-public class NativeShareCustomShareDialogActivity extends Activity
+public class NativeShareCustomShareDialogActivity extends FragmentActivity
 {
 	private boolean dialogDisplayed;
 
 	@Override
-	public void onCreate( Bundle savedInstanceState, PersistableBundle persistentState )
+	public void onCreate( Bundle savedInstanceState )
 	{
-		super.onCreate( savedInstanceState, persistentState );
+		super.onCreate( savedInstanceState );
 		setContentView( R.layout.native_share_custom_dialog_holder );
 	}
 
@@ -35,7 +34,7 @@ public class NativeShareCustomShareDialogActivity extends Activity
 
 			final DialogFragment request = new NativeShareCustomShareDialog();
 			request.setArguments( getIntent().getExtras() );
-			getFragmentManager().beginTransaction().add( 0, request ).commitAllowingStateLoss();
+			getSupportFragmentManager().beginTransaction().add( 0, request ).commitAllowingStateLoss();
 			//request.show( getFragmentManager(), "customsharedialog" );
 		}
 		else

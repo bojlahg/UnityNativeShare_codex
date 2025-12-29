@@ -3,7 +3,6 @@ package com.yasirkula.unity;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -20,6 +19,7 @@ import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
+import androidx.fragment.app.DialogFragment;
 
 import java.util.ArrayList;
 import java.util.Collections;

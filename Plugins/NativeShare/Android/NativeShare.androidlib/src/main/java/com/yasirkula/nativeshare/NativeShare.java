@@ -1,4 +1,4 @@
-package com.yasirkula.unity;
+package com.yasirkula.nativeshare;
 
 import android.app.Activity;
 import android.content.Context;

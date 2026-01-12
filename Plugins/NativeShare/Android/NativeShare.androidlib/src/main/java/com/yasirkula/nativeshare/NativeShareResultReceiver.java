@@ -1,4 +1,4 @@
-package com.yasirkula.unity;
+package com.yasirkula.nativeshare;
 
 /**
  * Created by yasirkula on 11.07.2020.

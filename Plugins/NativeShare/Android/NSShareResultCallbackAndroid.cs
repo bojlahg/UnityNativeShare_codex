@@ -7,7 +7,7 @@ namespace NativeShareNamespace
 	{
 		private readonly NSCallbackHelper callbackHelper;
 
-		public NSShareResultCallbackAndroid( NativeShare.ShareResultCallback callback ) : base( "com.yasirkula.unity.NativeShareResultReceiver" )
+		public NSShareResultCallbackAndroid( NativeShare.ShareResultCallback callback ) : base( "com.yasirkula.nativeshare.NativeShareResultReceiver" )
 		{
 			callbackHelper = new GameObject( "NSCallbackHelper" ).AddComponent<NSCallbackHelper>();
 			callbackHelper.callback = callback;

@@ -1,4 +1,4 @@
-package com.yasirkula.unity;
+package com.yasirkula.nativeshare;
 
 import android.os.Bundle;
 import androidx.fragment.app.DialogFragment;

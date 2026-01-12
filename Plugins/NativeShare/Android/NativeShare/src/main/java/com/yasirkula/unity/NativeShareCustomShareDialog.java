@@ -183,6 +183,12 @@ public class NativeShareCustomShareDialog extends DialogFragment
 		{
 			sentShareResult = true;
 
+			if( NativeShare.shareResultReceiver == null )
+			{
+				Log.w( "Unity", "Share result receiver is missing in onDestroy" );
+				return;
+			}
+
 			// It is safe to send NotShared result here since for a successful share, NotShared won't override Shared
 			NativeShare.shareResultReceiver.OnShareCompleted( 2, "" ); // 2: NotShared
 		}
@@ -197,6 +203,12 @@ public class NativeShareCustomShareDialog extends DialogFragment
 		if( !sentShareResult )
 		{
 			sentShareResult = true;
+
+			if( NativeShare.shareResultReceiver == null )
+			{
+				Log.w( "Unity", "Share result receiver is missing in onDismiss" );
+				return;
+			}
 
 			// It is safe to send NotShared result here since for a successful share, NotShared won't override Shared
 			NativeShare.shareResultReceiver.OnShareCompleted( 2, "" ); // 2: NotShared

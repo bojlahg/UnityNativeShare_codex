@@ -75,6 +75,9 @@ public class NativeShare
 		if( !shouldUseCustomShareDialog && IsXiaomiOrMIUI() && ( Build.VERSION.SDK_INT == 30 || IsUnityInLandscapeMode( (Activity) context ) ) )
 			shouldUseCustomShareDialog = true;
 
+		if( !shouldUseCustomShareDialog && !( context instanceof FragmentActivity ) )
+			shouldUseCustomShareDialog = true;
+
 		if( shouldUseCustomShareDialog )
 		{
 			Log.d( "Unity", "Creating custom share dialog" );

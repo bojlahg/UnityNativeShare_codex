@@ -183,8 +183,15 @@ public class NativeShare
 				saveAsJpeg = false;
 			}
 
+			byte[] textureBytes = GetTextureBytes( texture, saveAsJpeg );
+			if( textureBytes == null )
+			{
+				Debug.LogError( "Share Error: Failed to encode texture!" );
+				return this;
+			}
+
 			string filePath = Path.Combine( Application.temporaryCachePath, createdFileName );
-			File.WriteAllBytes( filePath, GetTextureBytes( texture, saveAsJpeg ) );
+			File.WriteAllBytes( filePath, textureBytes );
 
 			AddFile( filePath, saveAsJpeg ? "image/jpeg" : "image/png" );
 			temporaryFiles.Add( filePath );

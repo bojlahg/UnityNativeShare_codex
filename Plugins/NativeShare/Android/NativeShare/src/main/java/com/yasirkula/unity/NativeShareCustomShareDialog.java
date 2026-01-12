@@ -216,7 +216,7 @@ public class NativeShareCustomShareDialog extends DialogFragment
 		NativeShare.shareResultReceiver.OnShareCompleted( 1, selectedShareTargetStr ); // 1: Shared
 		sentShareResult = true;
 
-		shareIntent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
+		shareIntent.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
 		shareIntent.setComponent( shareTarget );
 
 		startActivity( shareIntent );

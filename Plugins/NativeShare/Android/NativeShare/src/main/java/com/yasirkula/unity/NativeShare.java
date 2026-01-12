@@ -34,6 +34,7 @@ public class NativeShare
 {
 	public static String authority = null;
 	public static NativeShareResultReceiver shareResultReceiver;
+	private static boolean isShareInProgress = false;
 
 	public static boolean alwaysUseCustomShareDialog = false;
 
@@ -41,6 +42,12 @@ public class NativeShare
 
 	public static void Share( final Context context, final NativeShareResultReceiver shareResultReceiver, final String[] targetPackages, final String[] targetClasses, final String[] files, final String[] mimes, final String[] emailRecipients, final String subject, final String text, final String title )
 	{
+		if( isShareInProgress )
+		{
+			Log.w( "Unity", "NativeShare: share already in progress." );
+			return;
+		}
+
 		if( files.length > 0 && GetAuthority( context ) == null )
 		{
 			Log.e( "Unity", "Can't find ContentProvider, share not possible!" );
@@ -49,7 +56,8 @@ public class NativeShare
 			return;
 		}
 
-		NativeShare.shareResultReceiver = shareResultReceiver;
+		isShareInProgress = true;
+		NativeShare.shareResultReceiver = new ShareResultReceiverWrapper( shareResultReceiver );
 
 		Bundle bundle = new Bundle();
 		bundle.putString( NativeShareFragment.SUBJECT_ID, subject );
@@ -294,6 +302,30 @@ public class NativeShare
 			result.add( arr[i] );
 
 		return result;
+	}
+
+	private static class ShareResultReceiverWrapper implements NativeShareResultReceiver
+	{
+		private final NativeShareResultReceiver receiver;
+
+		ShareResultReceiverWrapper( NativeShareResultReceiver receiver )
+		{
+			this.receiver = receiver;
+		}
+
+		@Override
+		public void OnShareCompleted( int result, String shareTarget )
+		{
+			isShareInProgress = false;
+			if( receiver != null )
+				receiver.OnShareCompleted( result, shareTarget );
+		}
+
+		@Override
+		public boolean HasManagedCallback()
+		{
+			return receiver != null && receiver.HasManagedCallback();
+		}
 	}
 
 	private static boolean IsUnityInLandscapeMode( Activity unityActivity )

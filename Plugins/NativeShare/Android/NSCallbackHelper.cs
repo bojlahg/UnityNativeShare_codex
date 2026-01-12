@@ -12,6 +12,11 @@ namespace NativeShareNamespace
 		private string shareTarget = null;
 
 		private bool resultReceived;
+		private bool waitingForResult;
+		private float focusResultStartTime;
+		private Coroutine focusResultCoroutine;
+
+		private const float FocusResultTimeout = 1.5f;
 
 		private void Awake()
 		{
@@ -41,16 +46,26 @@ namespace NativeShareNamespace
 			if( focus )
 			{
 				// Share sheet is closed and now Unity activity is running again. Send Unknown result if OnShareCompleted wasn't called
-				StartCoroutine( DelayedFocusResult() );
+				if( focusResultCoroutine != null )
+					StopCoroutine( focusResultCoroutine );
+
+				waitingForResult = true;
+				focusResultStartTime = Time.realtimeSinceStartup;
+				focusResultCoroutine = StartCoroutine( DelayedFocusResult() );
 			}
 		}
 
 		private IEnumerator DelayedFocusResult()
 		{
-			yield return null;
+			yield return new WaitForSeconds( FocusResultTimeout );
 
-			if( !resultReceived )
+			focusResultCoroutine = null;
+
+			if( waitingForResult && !resultReceived && Time.realtimeSinceStartup - focusResultStartTime >= FocusResultTimeout )
+			{
+				waitingForResult = false;
 				resultReceived = true;
+			}
 		}
 
 		public void OnShareCompleted( int resultRaw, string shareTarget )
@@ -78,6 +93,12 @@ namespace NativeShareNamespace
 					this.shareTarget = shareTarget;
 			}
 
+			waitingForResult = false;
+			if( focusResultCoroutine != null )
+			{
+				StopCoroutine( focusResultCoroutine );
+				focusResultCoroutine = null;
+			}
 			resultReceived = true;
 		}
 	}

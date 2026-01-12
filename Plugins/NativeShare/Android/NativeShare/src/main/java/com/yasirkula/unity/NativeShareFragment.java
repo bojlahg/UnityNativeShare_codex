@@ -50,7 +50,7 @@ public class NativeShareFragment extends Fragment
 			final Intent shareIntent = NativeShare.CreateIntentFromBundle( getActivity(), getArguments(), fileUris );
 			final String title = getArguments().getString( NativeShareFragment.TITLE_ID );
 
-			shareIntent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
+			shareIntent.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
 
 			try
 			{

@@ -190,7 +190,13 @@ public class NativeShare
 				return this;
 			}
 
-			string filePath = Path.Combine( Application.temporaryCachePath, createdFileName );
+			string filePath;
+			do
+			{
+				string uniqueFileName = string.Concat( System.Guid.NewGuid().ToString( "N" ), "_", createdFileName );
+				filePath = Path.Combine( Application.temporaryCachePath, uniqueFileName );
+			} while( File.Exists( filePath ) );
+
 			File.WriteAllBytes( filePath, textureBytes );
 
 			AddFile( filePath, saveAsJpeg ? "image/jpeg" : "image/png" );

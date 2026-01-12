@@ -242,7 +242,7 @@ public class NativeShare
 
 	public static void GrantURIPermissionsToShareIntentTargets( Context context, List<ResolveInfo> shareTargets, ArrayList<Uri> fileUris )
 	{
-		// Avoid "java.lang.SecurityException: Permission Denial: reading com.yasirkula.unity.NativeShareContentProvider uri ... requires the provider be exported, or grantUriPermission()"
+		// Avoid "java.lang.SecurityException: Permission Denial: reading com.yasirkula.nativeshare.NativeShareContentProvider uri ... requires the provider be exported, or grantUriPermission()"
 		// Credit: https://stackoverflow.com/a/59439316/2373034
 		try
 		{

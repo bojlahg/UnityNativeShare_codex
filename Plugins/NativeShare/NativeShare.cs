@@ -19,7 +19,7 @@ public class NativeShare
 		get
 		{
 			if( m_ajc == null )
-				m_ajc = new AndroidJavaClass( "com.yasirkula.unity.NativeShare" );
+				m_ajc = new AndroidJavaClass( "com.yasirkula.nativeshare.NativeShare" );
 
 			return m_ajc;
 		}

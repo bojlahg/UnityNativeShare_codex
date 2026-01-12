@@ -8,11 +8,16 @@ dependencies {
 }
 
 android {
-    compileSdkVersion **APIVERSION**
-    buildToolsVersion '**BUILDTOOLS**'
+    // Reuse Unity/Root project versions if they exist, otherwise fall back to sane defaults
+    def _compileSdk = rootProject.ext.has('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 35
+    def _minSdk     = rootProject.ext.has('minSdkVersion') ? rootProject.ext.minSdkVersion : 21
+    def _targetSdk  = rootProject.ext.has('targetSdkVersion') ? rootProject.ext.targetSdkVersion : _compileSdk
+
+    compileSdkVersion _compileSdk
+	buildToolsVersion "34.0.0"
 
     defaultConfig {
-        minSdkVersion **MINSDKVERSION**
-        targetSdkVersion **TARGETSDKVERSION**
+        minSdkVersion _minSdk
+        targetSdkVersion _targetSdk
     }
 }

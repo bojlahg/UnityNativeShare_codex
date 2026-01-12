@@ -64,6 +64,7 @@ public class NativeShare
 
 	private ShareResultCallback callback;
 	private bool cleanupAfterShare = true;
+	private static bool isShareInProgress;
 
 	public NativeShare Clear()
 	{
@@ -212,24 +213,29 @@ public class NativeShare
 
 	public void Share()
 	{
+		if( isShareInProgress )
+		{
+			Debug.LogWarning( "Share Error: share is already in progress!" );
+			return;
+		}
+
 		if( files.Count == 0 && subject.Length == 0 && text.Length == 0 && url.Length == 0 )
 		{
 			Debug.LogWarning( "Share Error: attempting to share nothing!" );
 			return;
 		}
 
+		isShareInProgress = true;
+		ShareResultCallback shareCallback = CreateShareCallback();
+
 #if UNITY_EDITOR
 		Debug.Log( "Shared!" );
 
-		if( callback != null )
-			callback( ShareResult.Shared, null );
-
-		if( cleanupAfterShare )
-			CleanupTemporaryFiles();
+		shareCallback( ShareResult.Shared, null );
 #elif UNITY_ANDROID
-		AJC.CallStatic( "Share", Context, new NSShareResultCallbackAndroid( GetCleanupCallback( callback ) ), targetPackages.ToArray(), targetClasses.ToArray(), files.ToArray(), mimes.ToArray(), emailRecipients.ToArray(), subject, CombineURLWithText(), title );
+		AJC.CallStatic( "Share", Context, new NSShareResultCallbackAndroid( shareCallback ), targetPackages.ToArray(), targetClasses.ToArray(), files.ToArray(), mimes.ToArray(), emailRecipients.ToArray(), subject, CombineURLWithText(), title );
 #elif UNITY_IOS
-		NSShareResultCallbackiOS.Initialize( GetCleanupCallback( callback ) );
+		NSShareResultCallbackiOS.Initialize( shareCallback );
 		if( files.Count == 0 )
 			_NativeShare_Share( new string[0], 0, subject, text, GetURLWithScheme() );
 		else
@@ -241,8 +247,7 @@ public class NativeShare
 #else
 		Debug.LogWarning( "NativeShare is not supported on this platform!" );
 
-		if( cleanupAfterShare )
-			CleanupTemporaryFiles();
+		shareCallback( ShareResult.NotShared, null );
 #endif
 	}
 
@@ -308,17 +313,25 @@ public class NativeShare
 			return string.Concat( text, " ", GetURLWithScheme() );
 	}
 
-	private ShareResultCallback GetCleanupCallback( ShareResultCallback originalCallback )
+	private ShareResultCallback CreateShareCallback()
 	{
-		if( !cleanupAfterShare || temporaryFiles.Count == 0 )
-			return originalCallback;
+		ShareResultCallback shareCallback = callback;
+		bool shouldCleanup = cleanupAfterShare;
 
-		return ( result, shareTarget ) =>
+		return (result, shareTarget) =>
 		{
-			if( originalCallback != null )
-				originalCallback( result, shareTarget );
+			try
+			{
+				if( shareCallback != null )
+					shareCallback( result, shareTarget );
+			}
+			finally
+			{
+				if( shouldCleanup )
+					CleanupTemporaryFiles();
 
-			CleanupTemporaryFiles();
+				isShareInProgress = false;
+			}
 		};
 	}
 

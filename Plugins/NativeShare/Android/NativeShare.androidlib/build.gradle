@@ -8,6 +8,8 @@ dependencies {
 }
 
 android {
+    namespace "com.yasirkula.nativeshare"
+
     // Reuse Unity/Root project versions if they exist, otherwise fall back to sane defaults
     def _compileSdk = rootProject.ext.has('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 35
     def _minSdk     = rootProject.ext.has('minSdkVersion') ? rootProject.ext.minSdkVersion : 21

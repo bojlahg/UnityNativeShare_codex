@@ -16,7 +16,8 @@ android {
     def _targetSdk  = rootProject.ext.has('targetSdkVersion') ? rootProject.ext.targetSdkVersion : _compileSdk
 
     compileSdkVersion _compileSdk
-	buildToolsVersion "34.0.0"
+    // Unity nests androidlib modules under :unityLibrary and fills its build tools with the installed version
+    buildToolsVersion project.parent.android.buildToolsVersion
 
     defaultConfig {
         minSdkVersion _minSdk
